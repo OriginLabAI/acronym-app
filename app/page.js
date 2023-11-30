@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from 'next/navigation';
 import { db } from '../firebaseConfig';
 import { collection, getDocs, addDoc } from 'firebase/firestore';
 import React, { useState, useEffect } from 'react';
@@ -12,6 +13,7 @@ import { deleteDoc, doc } from 'firebase/firestore';
 export default function Page() {
   const [acronyms, setAcronyms] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter(); // Define router here
 
   useEffect(() => {
     const fetchAcronyms = async () => {
@@ -42,10 +44,18 @@ export default function Page() {
     setAcronyms(acronyms.filter(acronym => acronym.id !== acronymId));
   };
 
+  const handleSignOut = () => {
+    // Implement sign-out logic here if needed
+    router.push('/login'); // Navigate to login page using Next.js router
+  };
+
   return (
-    <div className="flex flex-col h-screen"> {/* Full screen height */}
-      <header className="p-4 bg-white"> {/* Header */}
+    <div className="flex flex-col h-screen">
+      <header className="flex justify-between p-4 bg-white"> {/* Adjust header for layout */}
         <h1>Your Header Content Here</h1>
+        <button onClick={handleSignOut} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Sign Out
+        </button> {/* Sign Out Button */}
       </header>
       <div className="flex flex-1"> {/* Container for columns */}
         <aside className="w-1/6 bg-gray-50"> {/* Left Column */}
