@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from 'next/navigation';
-import { db } from '../firebaseConfig';
+import { db } from '../config/firebaseConfig';
 import { collection, getDocs, addDoc } from 'firebase/firestore';
 import React, { useState, useEffect } from 'react';
 import AcronymForm from '../AcronymForm'; 
