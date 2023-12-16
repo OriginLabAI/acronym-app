@@ -1,59 +1,49 @@
 "use client"
 
-import { useState } from 'react';
-import { auth } from '../../config/firebaseConfig';
+import React, { useState, useEffect } from "react";
 import { Container, TextField, Button, Typography, Box, Link } from '@mui/material';
-import NextLink from 'next/link'; // Import Next.js Link
+import NextLink from 'next/link'; 
+import { UserAuth } from "../../config/AuthContext";
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const {user, googleSignIn} = UserAuth();
+  const router = useRouter();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (user) {
+      router.push('/'); 
+    }
+  }, [user, router]);
+
+  const handleLogin = async () => {
     try {
-      await auth.signInWithEmailAndPassword(email, password);
-      // Redirect to dashboard or home page after successful login
+      await googleSignIn();
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
     }
   };
 
   return (
     <Container component="main" maxWidth="xs">
-      {/* ... other components ... */}
-        <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1 }}>
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          id="email"
-          label="Email Address"
-          name="email"
-          autoComplete="email"
-          autoFocus
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          />
-          <TextField
-          margin="normal"
-          required
-          fullWidth
-          name="password"
-          label="Password"
-          type="password"
-          id="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          />
+    <Box
+      sx={{
+        marginTop: 8,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}
+    >
+      <Typography component="h1" variant="h5">
+        Sign In
+      </Typography>
           <Button
-            type="submit"
             fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
+            variant="outlined"
+            sx={{ mt: 2, mb: 2 }}
+            onClick={handleLogin}
           >
-            Sign In
+            Sign in with Google
           </Button>
           <NextLink href="/signup" passHref>
             <Link variant="body2" component="a">
@@ -64,5 +54,3 @@ export default function LoginPage() {
     </Container>
   );
 }
-
-

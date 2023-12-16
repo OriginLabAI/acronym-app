@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from 'react';
-import { auth } from '../../config/firebaseConfig'; // Import auth from firebaseConfig
 import { Container, TextField, Button, Typography, Box } from '@mui/material';
 
 export default function SignupPage() {
