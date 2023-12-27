@@ -1,21 +1,39 @@
 "use client"
 
-import { useState } from 'react';
-import { Container, TextField, Button, Typography, Box } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Container, TextField, Button, Typography, Box, Alert, Link } from '@mui/material'; // Import Link from MUI
+import { UserAuth } from "../../config/AuthContext";
+import NextLink from 'next/link'; 
+import { useRouter } from 'next/navigation'
 
 export default function SignupPage() {
+  const { user, signUpWithEmail } = UserAuth();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
     try {
-      await auth.createUserWithEmailAndPassword(email, password);
-      // Redirect to dashboard or home page after successful signup
+      await signUpWithEmail(email, password);
+      setError(''); // Clear error on successful sign up
     } catch (error) {
       console.log(error.message);
+      setError(error.message);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      router.push('/'); 
+    }
+  }, [user, router]);
 
   return (
     <Container component="main" maxWidth="xs">
@@ -55,6 +73,19 @@ export default function SignupPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="confirmPassword"
+            label="Confirm Password"
+            type="password"
+            id="confirmPassword"
+            autoComplete="current-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
           <Button
             type="submit"
             fullWidth
@@ -62,8 +93,14 @@ export default function SignupPage() {
             sx={{ mt: 3, mb: 2 }}
           >
             Sign Up
-          </Button>
+            </Button>
+          {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
         </Box>
+        <NextLink href="/login" passHref>
+          <Link variant="body2" component="a">
+            {"already have an account? Log In"}
+          </Link>
+        </NextLink>
       </Box>
     </Container>
   );

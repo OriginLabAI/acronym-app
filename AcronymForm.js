@@ -7,7 +7,7 @@ const AcronymForm = ({ onAdd }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onAdd({ acronym, meaning });
+    onAdd({ acronym: acronym.toUpperCase(), meaning }); // Convert acronym to uppercase before sending
     setAcronym('');
     setMeaning('');
   };

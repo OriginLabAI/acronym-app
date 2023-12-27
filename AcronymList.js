@@ -13,7 +13,7 @@ const AcronymList = ({ acronyms, onDelete }) => {
   };
 
   return (
-    <TableContainer component={Paper} style={{ minHeight: 610, overflow: 'auto' }}>
+    <TableContainer component={Paper} style={{ maxHeight: 610, minHeight: 610, overflow: 'auto' }}>
       <Table stickyHeader>
         <TableHead>
           <TableRow>
