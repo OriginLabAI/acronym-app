@@ -175,7 +175,7 @@ export default function Page() {
             onClick={handleMenu}
             color="inherit"
           >
-            <AccountCircle />
+            <AccountCircle fontSize="large" />
           </IconButton>
           <Menu
             id="menu-appbar"
@@ -208,24 +208,26 @@ export default function Page() {
             <AcronymForm onAdd={handleAddAcronym} />
           </div>
         </main>
-        <aside className="w-1/6 bg-gray-50 flex justify-center items-center">
-          <div>
-            <input
-              accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-              style={{ display: 'none' }}
-              id="raised-button-file"
-              multiple
-              type="file"
-              onChange={handleFileUpload}
-            />
-            <label htmlFor="raised-button-file">
-              <Button variant="contained" component="span">
-                Bulk Upload
-              </Button>
-            </label>
+        <aside className="w-1/6 bg-gray-50 flex flex-col pt-14"> {/* Modify right column */}
+          <div className="flex justify-center items-start pt-12"> {/* Align items to the top */}
+            <div>
+              <input
+                accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                style={{ display: 'none' }}
+                id="raised-button-file"
+                multiple
+                type="file"
+                onChange={handleFileUpload}
+              />
+              <label htmlFor="raised-button-file">
+                <Button variant="contained" component="span">
+                  Bulk Upload
+                </Button>
+              </label>
+            </div>
           </div>
         </aside>
-      </div>
+        </div>
     </div>
   );
 }
