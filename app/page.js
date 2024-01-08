@@ -9,69 +9,42 @@ import AcronymList from '../AcronymList';
 import SearchBar from '../SearchBar';
 import { UserAuth } from "../config/AuthContext";
 import Papa from 'papaparse';
-import { Button, List, ListItem, ListItemIcon, ListItemText, IconButton } from '@mui/material';
+import { Button} from '@mui/material';
 import * as XLSX from 'xlsx';
-import ProfileIcon from '@mui/icons-material/Person';
-import LogoutIcon from '@mui/icons-material/Logout';
-import MenuIcon from '@mui/icons-material/Menu';
-import { styled, useTheme } from '@mui/material/styles';
-import MuiSwipeableDrawer from '@mui/material/SwipeableDrawer';
+import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-
-const StyledSwipeableDrawer = styled(MuiSwipeableDrawer)({
-  overflowX: 'hidden',
-  transition: 'width .25s ease-in-out',
-  '& ul': {
-    listStyle: 'none'
-  },
-  '& .MuiListItem-gutters': {
-    paddingLeft: 4,
-    paddingRight: 4
-  },
-  '& .MuiDrawer-paper': {
-    left: 'unset',
-    right: 'unset',
-    overflowX: 'hidden',
-    transition: 'width .25s ease-in-out, box-shadow .25s ease-in-out'
-  }
-});
+import Sidebar from '../components/sidebar';
 
 export default function Page() {
-  const [acronyms, setAcronyms] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+
   const router = useRouter(); 
   const { user, logOut } = UserAuth();
-  const [navHover, setNavHover] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [navVisible, setNavVisible] = useState(false);
 
-  //define this is user layout and pass down
+  //--------------Sidebar----------------------
+
+  // States related to the sidebar
+  const [navHover, setNavHover] = useState(false);
+  const [isSidebarOpen] = useState(false);
+  const [mobileNavVisible, setMobileNavVisible] = useState(false);
+
+  //define whether the user is using mobile or desktop
   const theme = useTheme();
   const hidden = useMediaQuery(theme.breakpoints.down('lg'));
 
-    // Toggle function for mobile navigation visibility
-    const toggleNavVisibility = () => {
-      setNavVisible(!navVisible);
-    };
-  
-    // Drawer Props for Mobile & Tablet screens
-    const MobileDrawerProps = {
-      open: navVisible,
-      onOpen: () => toggleNavVisibility(true),
-      onClose: () => toggleNavVisibility(false),
-      ModalProps: {
-        keepMounted: true, // Better open performance on mobile.
-      },
-    };
-  
-    // Drawer Props for Laptop & Desktop screens
-    const DesktopDrawerProps = {
-      open: isSidebarOpen,
-      onOpen: () => setIsSidebarOpen(true),
-      onClose: () => setIsSidebarOpen(false),
-      onMouseEnter: () => setNavHover(true),
-      onMouseLeave: () => setNavHover(false),
-    };
+  // Toggle function for mobile navigation visibility
+  const toggleNavVisibility = () => {
+    setMobileNavVisible(!mobileNavVisible);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await logOut();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  //-----------------Fetch acronyms for user -----
 
   useEffect(() => {
     if (!user) {
@@ -87,6 +60,19 @@ export default function Page() {
       fetchAcronyms();
     }
   }, [user, router]);
+
+  const fetchAcronyms = async () => {
+    try {
+      const userAcronymsRef = collection(db, 'users', user.uid, 'acronyms');
+      const querySnapshot = await getDocs(userAcronymsRef);
+      const fetchedAcronyms = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+      setAcronyms(fetchedAcronyms);
+    } catch (error) {
+      console.error("Error fetching acronyms:", error);
+    }
+  };
+
+  //------------Upload excel-------------------------
 
   const handleFileUpload = async (event) => {
     try {
@@ -155,16 +141,7 @@ export default function Page() {
     }
   };
   
-  const fetchAcronyms = async () => {
-    try {
-      const userAcronymsRef = collection(db, 'users', user.uid, 'acronyms');
-      const querySnapshot = await getDocs(userAcronymsRef);
-      const fetchedAcronyms = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-      setAcronyms(fetchedAcronyms);
-    } catch (error) {
-      console.error("Error fetching acronyms:", error);
-    }
-  };
+  //--------check if user is logged in------------
 
   useEffect(() => {
     if (!user) {
@@ -174,6 +151,11 @@ export default function Page() {
     fetchAcronyms();
   }, [user]);
   
+  //---------------Acronym List-------------------
+
+  const [acronyms, setAcronyms] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+
   const handleAddAcronym = async (newAcronym) => {
     const userAcronymsRef = collection(db, 'users', user.uid, 'acronyms');
     const docRef = await addDoc(userAcronymsRef, newAcronym);
@@ -185,7 +167,7 @@ export default function Page() {
   };
 
   const filteredAcronyms = acronyms.filter((acronym) =>
-    acronym && // Ensure acronym is not undefined
+    acronym && 
     (acronym.acronym?.toLowerCase().includes(searchTerm) ||
     acronym.meaning?.toLowerCase().includes(searchTerm))
   );
@@ -196,59 +178,20 @@ export default function Page() {
     setAcronyms(acronyms.filter(acronym => acronym.id !== acronymId));
   };
 
-  const handleSignOut = async () => {
-    try {
-      await logOut();
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  //--------------------------------------------------------
 
   return (
     <div style={{ display: 'flex' }}>
-      {/* Hamburger Menu Icon */}
-      {hidden && (
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          onClick={toggleNavVisibility}
-          sx={{ mr: 2, display: { sm: 'block', md: 'none' } }}
-        >
-          <MenuIcon />
-        </IconButton>
-      )}
-
-      <StyledSwipeableDrawer
-        variant={hidden ? 'temporary' : 'permanent'}
-        {...(hidden ? { ...MobileDrawerProps } : { ...DesktopDrawerProps })}
-        PaperProps={{
-          sx: {
-            width: hidden ? '50vw' : (navHover ? 240 : 50),
-            boxSizing: 'border-box',
-            overflowX: 'hidden',
-            transition: 'width .25s ease-in-out, box-shadow .25s ease-in-out',
-          },
-        }}
-      >
-        {/* Drawer content */}
-        <List>
-          {/* Add more items as needed */}
-          <ListItem button>
-            <ListItemIcon>
-              <ProfileIcon />
-            </ListItemIcon>
-            <ListItemText primary="Profile" sx={{ display: isSidebarOpen ? 'block' : 'none' }} />
-          </ListItem>
-        <ListItem button onClick={handleSignOut}>
-          <ListItemIcon>
-            <LogoutIcon />
-          </ListItemIcon>
-          <ListItemText primary="Sign Out" sx={{ display: isSidebarOpen ? 'block' : 'none' }} />
-        </ListItem>
-      </List>
-      </StyledSwipeableDrawer>
-
+      <Sidebar
+        hidden={hidden}
+        navHover={navHover}
+        isSidebarOpen={isSidebarOpen}
+        setNavHover={setNavHover}
+        setMobileNavVisible={setMobileNavVisible}
+        toggleNavVisibility={toggleNavVisibility}
+        handleSignOut={handleSignOut}
+        mobileNavVisible={mobileNavVisible}
+      />
       <div className="flex flex-1"> {/* Container for columns */}
         <main className="flex-1 flex justify-center items-center"> {/* Center Column */}
           <div>
