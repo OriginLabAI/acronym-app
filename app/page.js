@@ -9,25 +9,69 @@ import AcronymList from '../AcronymList';
 import SearchBar from '../SearchBar';
 import { UserAuth } from "../config/AuthContext";
 import Papa from 'papaparse';
-import { Button, Menu, MenuItem, IconButton } from '@mui/material';
+import { Button, List, ListItem, ListItemIcon, ListItemText, IconButton } from '@mui/material';
 import * as XLSX from 'xlsx';
-import AccountCircle from '@mui/icons-material/AccountCircle';
+import ProfileIcon from '@mui/icons-material/Person';
+import LogoutIcon from '@mui/icons-material/Logout';
+import MenuIcon from '@mui/icons-material/Menu';
+import { styled, useTheme } from '@mui/material/styles';
+import MuiSwipeableDrawer from '@mui/material/SwipeableDrawer';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
+const StyledSwipeableDrawer = styled(MuiSwipeableDrawer)({
+  overflowX: 'hidden',
+  transition: 'width .25s ease-in-out',
+  '& ul': {
+    listStyle: 'none'
+  },
+  '& .MuiListItem-gutters': {
+    paddingLeft: 4,
+    paddingRight: 4
+  },
+  '& .MuiDrawer-paper': {
+    left: 'unset',
+    right: 'unset',
+    overflowX: 'hidden',
+    transition: 'width .25s ease-in-out, box-shadow .25s ease-in-out'
+  }
+});
 
 export default function Page() {
   const [acronyms, setAcronyms] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const router = useRouter(); // Define router here
+  const router = useRouter(); 
   const { user, logOut } = UserAuth();
-  const [anchorEl, setAnchorEl] = useState(null); // For handling the menu position
+  const [navHover, setNavHover] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [navVisible, setNavVisible] = useState(false);
 
-  const handleMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  //define this is user layout and pass down
+  const theme = useTheme();
+  const hidden = useMediaQuery(theme.breakpoints.down('lg'));
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+    // Toggle function for mobile navigation visibility
+    const toggleNavVisibility = () => {
+      setNavVisible(!navVisible);
+    };
+  
+    // Drawer Props for Mobile & Tablet screens
+    const MobileDrawerProps = {
+      open: navVisible,
+      onOpen: () => toggleNavVisibility(true),
+      onClose: () => toggleNavVisibility(false),
+      ModalProps: {
+        keepMounted: true, // Better open performance on mobile.
+      },
+    };
+  
+    // Drawer Props for Laptop & Desktop screens
+    const DesktopDrawerProps = {
+      open: isSidebarOpen,
+      onOpen: () => setIsSidebarOpen(true),
+      onClose: () => setIsSidebarOpen(false),
+      onMouseEnter: () => setNavHover(true),
+      onMouseLeave: () => setNavHover(false),
+    };
 
   useEffect(() => {
     if (!user) {
@@ -111,8 +155,6 @@ export default function Page() {
     }
   };
   
-  
-
   const fetchAcronyms = async () => {
     try {
       const userAcronymsRef = collection(db, 'users', user.uid, 'acronyms');
@@ -163,44 +205,51 @@ export default function Page() {
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      <header className="flex justify-between p-4 bg-white">
-        <h1>AcronymList</h1>
-        <div>
-          <IconButton
-            size="large"
-            aria-label="account of current user"
-            aria-controls="menu-appbar"
-            aria-haspopup="true"
-            onClick={handleMenu}
-            color="inherit"
-          >
-            <AccountCircle fontSize="large" />
-          </IconButton>
-          <Menu
-            id="menu-appbar"
-            anchorEl={anchorEl}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          >
-            <MenuItem onClick={handleClose}>{user?.email}</MenuItem>
-            <MenuItem onClick={() => {handleClose(); handleSignOut();}}>Sign Out</MenuItem>
-          </Menu>
-        </div>
-      </header>
+    <div style={{ display: 'flex' }}>
+      {/* Hamburger Menu Icon */}
+      {hidden && (
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="start"
+          onClick={toggleNavVisibility}
+          sx={{ mr: 2, display: { sm: 'block', md: 'none' } }}
+        >
+          <MenuIcon />
+        </IconButton>
+      )}
+
+      <StyledSwipeableDrawer
+        variant={hidden ? 'temporary' : 'permanent'}
+        {...(hidden ? { ...MobileDrawerProps } : { ...DesktopDrawerProps })}
+        PaperProps={{
+          sx: {
+            width: hidden ? '50vw' : (navHover ? 240 : 50),
+            boxSizing: 'border-box',
+            overflowX: 'hidden',
+            transition: 'width .25s ease-in-out, box-shadow .25s ease-in-out',
+          },
+        }}
+      >
+        {/* Drawer content */}
+        <List>
+          {/* Add more items as needed */}
+          <ListItem button>
+            <ListItemIcon>
+              <ProfileIcon />
+            </ListItemIcon>
+            <ListItemText primary="Profile" sx={{ display: isSidebarOpen ? 'block' : 'none' }} />
+          </ListItem>
+        <ListItem button onClick={handleSignOut}>
+          <ListItemIcon>
+            <LogoutIcon />
+          </ListItemIcon>
+          <ListItemText primary="Sign Out" sx={{ display: isSidebarOpen ? 'block' : 'none' }} />
+        </ListItem>
+      </List>
+      </StyledSwipeableDrawer>
+
       <div className="flex flex-1"> {/* Container for columns */}
-        <aside className="w-1/6 bg-gray-50"> {/* Left Column */}
-          {/* Left Column Content */}
-        </aside>
         <main className="flex-1 flex justify-center items-center"> {/* Center Column */}
           <div>
             <SearchBar onSearch={handleSearch} />

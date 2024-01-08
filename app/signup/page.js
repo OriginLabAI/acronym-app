@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation'
 export default function SignupPage() {
   const { user, signUpWithEmail } = UserAuth();
   const router = useRouter();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -21,7 +23,7 @@ export default function SignupPage() {
       return;
     }
     try {
-      await signUpWithEmail(email, password);
+      await signUpWithEmail(email, password, firstName, lastName);
       setError(''); // Clear error on successful sign up
     } catch (error) {
       console.log(error.message);
@@ -53,11 +55,33 @@ export default function SignupPage() {
             margin="normal"
             required
             fullWidth
+            id="firstName"
+            label="First Name"
+            name="firstName"
+            autoComplete="given-name"
+            autoFocus
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="lastName"
+            label="Last Name"
+            name="lastName"
+            autoComplete="family-name"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
             id="email"
             label="Email Address"
             name="email"
             autoComplete="email"
-            autoFocus
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -93,13 +117,20 @@ export default function SignupPage() {
             sx={{ mt: 3, mb: 2 }}
           >
             Sign Up
-            </Button>
+          </Button>
           {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
         </Box>
         <NextLink href="/login" passHref>
-          <Link variant="body2" component="a">
-            {"already have an account? Log In"}
-          </Link>
+          <Typography
+            variant="body1"
+            style={{
+              cursor: 'pointer',
+              color: 'blue', // Sets the text color to blue
+              textDecoration: 'underline', // Underlines the text
+            }}
+          >
+            Already have an account? Log In
+          </Typography>
         </NextLink>
       </Box>
     </Container>

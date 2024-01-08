@@ -6,6 +6,7 @@ import NextLink from 'next/link';
 import { UserAuth } from "../../config/AuthContext";
 import { useRouter } from 'next/navigation'
 
+
 export default function LoginPage() {
   const { user, googleSignIn, signInWithEmail } = UserAuth() || {};
   const router = useRouter();
@@ -91,9 +92,16 @@ export default function LoginPage() {
           Sign in with Google
         </Button>
         <NextLink href="/signup" passHref>
-          <Link variant="body2" component="a">
-            {"Don't have an account? Sign Up"}
-          </Link>
+          <Typography
+            variant="body1"
+            style={{
+              cursor: 'pointer',
+              color: 'blue', // Sets the text color to blue
+              textDecoration: 'underline', // Underlines the text
+            }}
+          >
+            Don't have an account? Sign Up
+          </Typography>
         </NextLink>
       </Box>
     </Container>
